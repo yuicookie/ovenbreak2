@@ -8998,3 +8998,2003 @@ var P;
         util.waitOneTick();
         util.writeLn('}');
     };
+    statementLibrary['sound_setvolumeto'] = function (util) {
+        const VOLUME = util.getInput('VOLUME', 'number');
+        util.writeLn(`S.volume = Math.max(0, Math.min(1, ${VOLUME} / 100));`);
+        util.writeLn('if (S.node) S.node.gain.value = S.volume;');
+        util.writeLn('if (!self.removeLimits) {');
+        util.waitOneTick();
+        util.writeLn('}');
+    };
+    statementLibrary['sound_stopallsounds'] = function (util) {
+        if (P.audio.context) {
+            util.writeLn('self.stopAllSounds();');
+        }
+    };
+    statementLibrary['sensing_askandwait'] = function (util) {
+        const QUESTION = util.getInput('QUESTION', 'string');
+        util.writeLn('R.id = self.nextPromptId++;');
+        const label1 = util.addLabel();
+        util.writeLn('if (self.promptId < R.id) {');
+        util.forceQueue(label1);
+        util.writeLn('}');
+        util.writeLn(`S.ask(${QUESTION});`);
+        const label2 = util.addLabel();
+        util.writeLn('if (self.promptId === R.id) {');
+        util.forceQueue(label2);
+        util.writeLn('}');
+        util.writeLn('S.say("");');
+        util.visual('always');
+    };
+    statementLibrary['sensing_resettimer'] = function (util) {
+        util.writeLn('runtime.resetTimer();');
+    };
+    statementLibrary['sensing_setdragmode'] = function (util) {
+        const DRAG_MODE = util.getField('DRAG_MODE');
+        if (DRAG_MODE === 'draggable') {
+            util.writeLn('S.isDraggable = true;');
+        }
+        else {
+            util.writeLn('S.isDraggable = false;');
+        }
+    };
+    statementLibrary['text2speech_setVoice'] = function (util) {
+        const VOICE = util.getInput('VOICE', 'string');
+        util.stage.initTextToSpeech();
+        util.writeLn(`self.tts.setVoice(${VOICE});`);
+    };
+    statementLibrary['text2speech_setLanguage'] = function (util) {
+        const LANGUAGE = util.getInput('LANGUAGE', 'string');
+        util.stage.initTextToSpeech();
+        util.writeLn(`self.tts.setLanguage(${LANGUAGE});`);
+    };
+    statementLibrary['text2speech_speakAndWait'] = function (util) {
+        const WORDS = util.getInput('WORDS', 'string');
+        util.stage.initTextToSpeech();
+        util.waitUntilSettles(`self.tts.speak(${WORDS})`);
+    };
+    statementLibrary['videoSensing_videoToggle'] = function (util) {
+        const VIDEO_STATE = util.getInput('VIDEO_STATE', 'string');
+        util.writeLn(`switch (${VIDEO_STATE}) {`);
+        util.writeLn('  case "off": self.showVideo(false); break;');
+        util.writeLn('  case "on": self.showVideo(true); break;');
+        util.writeLn('}');
+    };
+    const noopStatement = (util) => util.writeLn('/* noop */');
+    statementLibrary['motion_align_scene'] = noopStatement;
+    statementLibrary['motion_scroll_right'] = noopStatement;
+    statementLibrary['motion_scroll_up'] = noopStatement;
+    statementLibrary['looks_changestretchby'] = noopStatement;
+    statementLibrary['looks_hideallsprites'] = noopStatement;
+    statementLibrary['looks_setstretchto'] = noopStatement;
+    inputLibrary['argument_reporter_boolean'] = function (util) {
+        const VALUE = util.getField('VALUE');
+        if (!util.compiler.state.isProcedure || util.compiler.state.argumentNames.indexOf(VALUE) === -1) {
+            const lowerCaseName = VALUE.toLowerCase();
+            if (lowerCaseName === 'is compiled?' || lowerCaseName === 'is forkphorus?') {
+                return util.booleanInput('true');
+            }
+            return util.numberInput('0');
+        }
+        return util.booleanInput(util.asType(`C.args[${util.sanitizedString(VALUE)}]`, 'boolean'));
+    };
+    inputLibrary['argument_reporter_string_number'] = function (util) {
+        const VALUE = util.getField('VALUE');
+        if (!util.compiler.state.isProcedure || util.compiler.state.argumentNames.indexOf(VALUE) === -1) {
+            return util.numberInput('0');
+        }
+        return util.anyInput(`C.args[${util.sanitizedString(VALUE)}]`);
+    };
+    inputLibrary['control_create_clone_of_menu'] = function (util) {
+        return util.fieldInput('CLONE_OPTION');
+    };
+    inputLibrary['control_get_counter'] = function (util) {
+        return util.numberInput('self.counter');
+    };
+    inputLibrary['data_itemoflist'] = function (util) {
+        const LIST = util.getListReference('LIST');
+        const INDEX = util.getInput('INDEX', 'any');
+        return util.anyInput(`getLineOfList(${LIST}, ${INDEX})`);
+    };
+    inputLibrary['data_itemnumoflist'] = function (util) {
+        const LIST = util.getListReference('LIST');
+        const ITEM = util.getInput('ITEM', 'any');
+        return util.numberInput(`listIndexOf(${LIST}, ${ITEM})`);
+    };
+    inputLibrary['data_lengthoflist'] = function (util) {
+        const LIST = util.getListReference('LIST');
+        return util.numberInput(`${LIST}.length`);
+    };
+    inputLibrary['data_listcontainsitem'] = function (util) {
+        const LIST = util.getListReference('LIST');
+        const ITEM = util.getInput('ITEM', 'any');
+        return util.booleanInput(`listContains(${LIST}, ${ITEM})`);
+    };
+    inputLibrary['looks_backdropnumbername'] = function (util) {
+        const NUMBER_NAME = util.getField('NUMBER_NAME');
+        if (NUMBER_NAME === 'number') {
+            return util.numberInput('(self.currentCostumeIndex + 1)');
+        }
+        else {
+            return util.stringInput('self.costumes[self.currentCostumeIndex].name');
+        }
+    };
+    inputLibrary['looks_backdrops'] = function (util) {
+        return util.fieldInput('BACKDROP');
+    };
+    inputLibrary['looks_costume'] = function (util) {
+        return util.fieldInput('COSTUME');
+    };
+    inputLibrary['looks_costumenumbername'] = function (util) {
+        const NUMBER_NAME = util.getField('NUMBER_NAME');
+        if (NUMBER_NAME === 'number') {
+            return util.numberInput('(S.currentCostumeIndex + 1)');
+        }
+        else {
+            return util.stringInput('S.costumes[S.currentCostumeIndex].name');
+        }
+    };
+    inputLibrary['looks_size'] = function (util) {
+        return util.numberInput('Math.round(S.scale * 100)');
+    };
+    inputLibrary['makeymakey_menu_KEY'] = function (util) {
+        return util.fieldInput('KEY');
+    };
+    inputLibrary['makeymakey_menu_SEQUENCE'] = function (util) {
+        return util.fieldInput('SEQUENCE');
+    };
+    inputLibrary['matrix'] = function (util) {
+        return util.fieldInput('MATRIX');
+    };
+    inputLibrary['motion_direction'] = function (util) {
+        return util.numberInput('S.direction');
+    };
+    inputLibrary['motion_glideto_menu'] = function (util) {
+        return util.fieldInput('TO');
+    };
+    inputLibrary['motion_goto_menu'] = function (util) {
+        return util.fieldInput('TO');
+    };
+    inputLibrary['motion_pointtowards_menu'] = function (util) {
+        return util.fieldInput('TOWARDS');
+    };
+    inputLibrary['motion_xposition'] = function (util) {
+        return util.numberInput('S.scratchX');
+    };
+    inputLibrary['motion_yposition'] = function (util) {
+        return util.numberInput('S.scratchY');
+    };
+    inputLibrary['music_getTempo'] = function (util) {
+        return util.numberInput('self.tempoBPM');
+    };
+    inputLibrary['music_menu_DRUM'] = function (util) {
+        return util.fieldInput('DRUM');
+    };
+    inputLibrary['music_menu_INSTRUMENT'] = function (util) {
+        return util.fieldInput('INSTRUMENT');
+    };
+    inputLibrary['note'] = function (util) {
+        return util.fieldInput('NOTE');
+    };
+    inputLibrary['operator_add'] = function (util) {
+        const NUM1 = util.getInput('NUM1', 'number');
+        const NUM2 = util.getInput('NUM2', 'number');
+        return util.numberInput(`(${NUM1} + ${NUM2} || 0)`);
+    };
+    inputLibrary['operator_and'] = function (util) {
+        const OPERAND1 = util.getInput('OPERAND1', 'any');
+        const OPERAND2 = util.getInput('OPERAND2', 'any');
+        return util.booleanInput(`(${OPERAND1} && ${OPERAND2})`);
+    };
+    inputLibrary['operator_contains'] = function (util) {
+        const STRING1 = util.getInput('STRING1', 'string');
+        const STRING2 = util.getInput('STRING2', 'string');
+        return util.booleanInput(`stringContains(${STRING1}, ${STRING2})`);
+    };
+    inputLibrary['operator_divide'] = function (util) {
+        const NUM1 = util.getInput('NUM1', 'number');
+        const NUM2 = util.getInput('NUM2', 'number');
+        const input = util.numberInput(`(${NUM1} / ${NUM2})`);
+        input.enableFlag(1);
+        return input;
+    };
+    inputLibrary['operator_equals'] = function (util) {
+        const OPERAND1 = util.getInput('OPERAND1', 'any');
+        const OPERAND2 = util.getInput('OPERAND2', 'any');
+        if (!OPERAND1.potentialNumber || !OPERAND2.potentialNumber) {
+            return util.booleanInput(`strEqual(${OPERAND1}, ${OPERAND2})`);
+        }
+        if (P.config.experimentalOptimizations) {
+            if (OPERAND1.type === 'number') {
+                return util.booleanInput(`numEqualExperimental(${OPERAND1}, ${OPERAND2})`);
+            }
+            if (OPERAND2.type === 'number') {
+                return util.booleanInput(`numEqualExperimental(${OPERAND2}, ${OPERAND1})`);
+            }
+        }
+        return util.booleanInput(`equal(${OPERAND1}, ${OPERAND2})`);
+    };
+    inputLibrary['operator_gt'] = function (util) {
+        const OPERAND1 = util.getInput('OPERAND1', 'any');
+        const OPERAND2 = util.getInput('OPERAND2', 'any');
+        if (P.config.experimentalOptimizations) {
+            if (OPERAND1.type === 'number') {
+                return util.booleanInput(`numGreaterExperimental(${OPERAND1}, ${OPERAND2})`);
+            }
+        }
+        return util.booleanInput(`(compare(${OPERAND1}, ${OPERAND2}) === 1)`);
+    };
+    inputLibrary['operator_join'] = function (util) {
+        const STRING1 = util.getInput('STRING1', 'string');
+        const STRING2 = util.getInput('STRING2', 'string');
+        return util.stringInput(`(${STRING1} + ${STRING2})`);
+    };
+    inputLibrary['operator_length'] = function (util) {
+        const STRING = util.getInput('STRING', 'string');
+        return util.numberInput(`(${STRING}).length`);
+    };
+    inputLibrary['operator_letter_of'] = function (util) {
+        const STRING = util.getInput('STRING', 'string');
+        const LETTER = util.getInput('LETTER', 'number');
+        return util.stringInput(`((${STRING})[(${LETTER} | 0) - 1] || "")`);
+    };
+    inputLibrary['operator_lt'] = function (util) {
+        const OPERAND1 = util.getInput('OPERAND1', 'any');
+        const OPERAND2 = util.getInput('OPERAND2', 'any');
+        if (P.config.experimentalOptimizations) {
+            if (OPERAND1.type === 'number') {
+                return util.booleanInput(`numLessExperimental(${OPERAND1}, ${OPERAND2})`);
+            }
+        }
+        return util.booleanInput(`(compare(${OPERAND1}, ${OPERAND2}) === -1)`);
+    };
+    inputLibrary['operator_mathop'] = function (util) {
+        const OPERATOR = util.getField('OPERATOR');
+        const NUM = util.getInput('NUM', 'number');
+        switch (OPERATOR) {
+            case 'abs':
+                return util.numberInput(`Math.abs(${NUM})`);
+            case 'floor':
+                return util.numberInput(`Math.floor(${NUM})`);
+            case 'sqrt': {
+                const input = util.numberInput(`Math.sqrt(${NUM})`);
+                input.enableFlag(1);
+                return input;
+            }
+            case 'ceiling':
+                return util.numberInput(`Math.ceil(${NUM})`);
+            case 'cos':
+                return util.numberInput(`(Math.round(Math.cos(${NUM} * Math.PI / 180) * 1e10) / 1e10)`);
+            case 'sin':
+                return util.numberInput(`(Math.round(Math.sin(${NUM} * Math.PI / 180) * 1e10) / 1e10)`);
+            case 'tan':
+                return util.numberInput(`Math.tan(${NUM} * Math.PI / 180)`);
+            case 'asin':
+                return util.numberInput(`(Math.asin(${NUM}) * 180 / Math.PI)`);
+            case 'acos':
+                return util.numberInput(`(Math.acos(${NUM}) * 180 / Math.PI)`);
+            case 'atan':
+                return util.numberInput(`(Math.atan(${NUM}) * 180 / Math.PI)`);
+            case 'ln':
+                return util.numberInput(`Math.log(${NUM})`);
+            case 'log':
+                return util.numberInput(`(Math.log(${NUM}) / Math.LN10)`);
+            case 'e ^':
+                return util.numberInput(`Math.exp(${NUM})`);
+            case '10 ^':
+                return util.numberInput(`Math.pow(10, ${NUM})`);
+            default:
+                return util.numberInput('0');
+        }
+    };
+    inputLibrary['operator_mod'] = function (util) {
+        const NUM1 = util.getInput('NUM1', 'number');
+        const NUM2 = util.getInput('NUM2', 'number');
+        return util.numberInput(`mod(${NUM1}, ${NUM2})`);
+    };
+    inputLibrary['operator_multiply'] = function (util) {
+        const NUM1 = util.getInput('NUM1', 'number');
+        const NUM2 = util.getInput('NUM2', 'number');
+        return util.numberInput(`(${NUM1} * ${NUM2} || 0)`);
+    };
+    inputLibrary['operator_not'] = function (util) {
+        const OPERAND = util.getInput('OPERAND', 'any');
+        return util.booleanInput(`!${OPERAND}`);
+    };
+    inputLibrary['operator_or'] = function (util) {
+        const OPERAND1 = util.getInput('OPERAND1', 'any');
+        const OPERAND2 = util.getInput('OPERAND2', 'any');
+        return util.booleanInput(`(${OPERAND1} || ${OPERAND2})`);
+    };
+    inputLibrary['operator_random'] = function (util) {
+        const FROM = util.getInput('FROM', 'string');
+        const TO = util.getInput('TO', 'string');
+        return util.numberInput(`random(${FROM}, ${TO})`);
+    };
+    inputLibrary['operator_round'] = function (util) {
+        const NUM = util.getInput('NUM', 'number');
+        return util.numberInput(`Math.round(${NUM})`);
+    };
+    inputLibrary['operator_subtract'] = function (util) {
+        const NUM1 = util.getInput('NUM1', 'number');
+        const NUM2 = util.getInput('NUM2', 'number');
+        return util.numberInput(`(${NUM1} - ${NUM2} || 0)`);
+    };
+    inputLibrary['pen_menu_colorParam'] = function (util) {
+        return util.fieldInput('colorParam');
+    };
+    inputLibrary['sensing_answer'] = function (util) {
+        return util.stringInput('self.answer');
+    };
+    inputLibrary['sensing_coloristouchingcolor'] = function (util) {
+        const COLOR = util.getInput('COLOR', 'color');
+        const COLOR2 = util.getInput('COLOR2', 'color');
+        return util.booleanInput(`S.colorTouchingColor(${COLOR}, ${COLOR2})`);
+    };
+    inputLibrary['sensing_current'] = function (util) {
+        const CURRENTMENU = util.getField('CURRENTMENU').toLowerCase();
+        switch (CURRENTMENU) {
+            case 'year': return util.numberInput('new Date().getFullYear()');
+            case 'month': return util.numberInput('(new Date().getMonth() + 1)');
+            case 'date': return util.numberInput('new Date().getDate()');
+            case 'dayofweek': return util.numberInput('(new Date().getDay() + 1)');
+            case 'hour': return util.numberInput('new Date().getHours()');
+            case 'minute': return util.numberInput('new Date().getMinutes()');
+            case 'second': return util.numberInput('new Date().getSeconds()');
+        }
+        return util.numberInput('0');
+    };
+    inputLibrary['sensing_dayssince2000'] = function (util) {
+        return util.numberInput('((Date.now() - epoch) / 86400000)');
+    };
+    inputLibrary['sensing_distanceto'] = function (util) {
+        const DISTANCETOMENU = util.getInput('DISTANCETOMENU', 'any');
+        return util.numberInput(`S.distanceTo(${DISTANCETOMENU})`);
+    };
+    inputLibrary['sensing_distancetomenu'] = function (util) {
+        return util.fieldInput('DISTANCETOMENU');
+    };
+    inputLibrary['sensing_keyoptions'] = function (util) {
+        return util.fieldInput('KEY_OPTION');
+    };
+    inputLibrary['sensing_keypressed'] = function (util) {
+        const KEY_OPTION = util.getInput('KEY_OPTION', 'string');
+        return util.booleanInput(`!!self.keys[getKeyCode3(${KEY_OPTION})]`);
+    };
+    inputLibrary['sensing_loud'] = function (util) {
+        util.stage.initMicrophone();
+        return util.booleanInput('(self.microphone.getLoudness() > 10)');
+    };
+    inputLibrary['sensing_loudness'] = function (util) {
+        util.stage.initMicrophone();
+        return util.numberInput('self.microphone.getLoudness()');
+    };
+    inputLibrary['sensing_mousedown'] = function (util) {
+        return util.booleanInput('self.mousePressed');
+    };
+    inputLibrary['sensing_mousex'] = function (util) {
+        return util.numberInput('self.mouseX');
+    };
+    inputLibrary['sensing_mousey'] = function (util) {
+        return util.numberInput('self.mouseY');
+    };
+    inputLibrary['sensing_of'] = function (util) {
+        const PROPERTY = util.sanitizedString(util.getField('PROPERTY'));
+        const OBJECT = util.getInput('OBJECT', 'string');
+        return util.anyInput(`attribute(${PROPERTY}, ${OBJECT})`);
+    };
+    inputLibrary['sensing_of_object_menu'] = function (util) {
+        return util.fieldInput('OBJECT');
+    };
+    inputLibrary['sensing_timer'] = function (util) {
+        return util.numberInput('((runtime.now() - runtime.timerStart) / 1000)');
+    };
+    inputLibrary['sensing_touchingcolor'] = function (util) {
+        const COLOR = util.getInput('COLOR', 'color');
+        return util.booleanInput(`S.touchingColor(${COLOR})`);
+    };
+    inputLibrary['sensing_touchingobject'] = function (util) {
+        const TOUCHINGOBJECTMENU = util.getInput('TOUCHINGOBJECTMENU', 'string');
+        return util.booleanInput(`S.touching(${TOUCHINGOBJECTMENU})`);
+    };
+    inputLibrary['sensing_touchingobjectmenu'] = function (util) {
+        return util.fieldInput('TOUCHINGOBJECTMENU');
+    };
+    inputLibrary['sound_sounds_menu'] = function (util) {
+        return util.fieldInput('SOUND_MENU');
+    };
+    inputLibrary['sensing_username'] = function (util) {
+        return util.stringInput('self.username');
+    };
+    inputLibrary['sound_volume'] = function (util) {
+        return util.numberInput('(S.volume * 100)');
+    };
+    inputLibrary['text2speech_menu_voices'] = function (util) {
+        return util.fieldInput('voices');
+    };
+    inputLibrary['text2speech_menu_languages'] = function (util) {
+        return util.fieldInput('languages');
+    };
+    inputLibrary['translate_menu_languages'] = function (util) {
+        return util.fieldInput('languages');
+    };
+    inputLibrary['translate_getTranslate'] = function (util) {
+        const WORDS = util.getInput('WORDS', 'string');
+        const LANGUAGE = util.getInput('LANGUAGE', 'string');
+        return WORDS;
+    };
+    inputLibrary['translate_getViewerLanguage'] = function (util) {
+        return util.sanitizedInput('English');
+    };
+    inputLibrary['videoSensing_menu_VIDEO_STATE'] = function (util) {
+        return util.fieldInput('VIDEO_STATE');
+    };
+    const noopInput = (util) => util.anyInput('undefined');
+    inputLibrary['motion_yscroll'] = noopInput;
+    inputLibrary['motion_xscroll'] = noopInput;
+    inputLibrary['sensing_userid'] = noopInput;
+    hatLibrary['control_start_as_clone'] = {
+        handle(util) {
+            util.target.listeners.whenCloned.push(util.startingFunction);
+        },
+    };
+    hatLibrary['event_whenbackdropswitchesto'] = {
+        handle(util) {
+            const BACKDROP = util.getField('BACKDROP').toLowerCase();
+            if (!util.target.listeners.whenSceneStarts[BACKDROP]) {
+                util.target.listeners.whenSceneStarts[BACKDROP] = [];
+            }
+            util.target.listeners.whenSceneStarts[BACKDROP].push(util.startingFunction);
+        },
+    };
+    hatLibrary['event_whenbroadcastreceived'] = {
+        handle(util) {
+            const BROADCAST_OPTION = util.getField('BROADCAST_OPTION').toLowerCase();
+            if (!util.target.listeners.whenIReceive[BROADCAST_OPTION]) {
+                util.target.listeners.whenIReceive[BROADCAST_OPTION] = [];
+            }
+            util.target.listeners.whenIReceive[BROADCAST_OPTION].push(util.startingFunction);
+        },
+    };
+    hatLibrary['event_whenflagclicked'] = {
+        handle(util) {
+            util.target.listeners.whenGreenFlag.push(util.startingFunction);
+        },
+    };
+    hatLibrary['event_whengreaterthan'] = {
+        precompile(compiler, hat) {
+            const WHENGREATERTHANMENU = compiler.getField(hat, 'WHENGREATERTHANMENU');
+            const VALUE = compiler.compileInput(hat, 'VALUE', 'number');
+            let executeWhen = 'false';
+            let stallUntil = 'false';
+            switch (WHENGREATERTHANMENU.toLowerCase()) {
+                case 'timer':
+                    executeWhen = `runtime.whenTimerMSecs / 1000 > ${VALUE}`;
+                    stallUntil = `runtime.whenTimerMSecs / 1000 <= ${VALUE}`;
+                    break;
+                case 'loudness':
+                    compiler.target.stage.initMicrophone();
+                    executeWhen = `self.microphone.getLoudness() > ${VALUE}`;
+                    stallUntil = `self.microphone.getLoudness() <= ${VALUE}`;
+                    break;
+                default:
+                    console.warn('unknown WHENGREATERTHANMENU', WHENGREATERTHANMENU);
+            }
+            let source = '';
+            source += 'if (!R.init) { R.init = true; R.stalled = false; }\n';
+            source += `if (R.stalled && (${stallUntil})) { R.stalled = false; }\n`;
+            source += `else if (!R.stalled && (${executeWhen})) { R.stalled = true;\n`;
+            return source;
+        },
+        postcompile(compiler, source, hat) {
+            source += '}\n';
+            source += `forceQueue(${compiler.target.fns.length});`;
+            return source;
+        },
+        handle(util) {
+            util.target.listeners.edgeActivated.push(util.startingFunction);
+        },
+    };
+    hatLibrary['event_whenkeypressed'] = {
+        handle(util) {
+            const KEY_OPTION = util.getField('KEY_OPTION');
+            const key = P.runtime.getKeyCode(KEY_OPTION);
+            util.target.addWhenKeyPressedHandler(key, util.startingFunction);
+        },
+    };
+    hatLibrary['event_whenstageclicked'] = {
+        handle(util) {
+            util.target.listeners.whenClicked.push(util.startingFunction);
+        },
+    };
+    hatLibrary['event_whenthisspriteclicked'] = {
+        handle(util) {
+            util.target.listeners.whenClicked.push(util.startingFunction);
+        },
+    };
+    function makeymakeyParseKey(key) {
+        key = key.toLowerCase();
+        if (key === 'up' || key === 'down' || key === 'left' || key === 'right') {
+            return P.runtime.getKeyCode(key + ' arrow');
+        }
+        return P.runtime.getKeyCode(key);
+    }
+    hatLibrary['makeymakey_whenMakeyKeyPressed'] = {
+        handle(util) {
+            const KEY = util.getInput('KEY', 'string');
+            try {
+                const keyValue = '' + util.evaluateInputOnce(KEY);
+                if (typeof keyValue !== 'string')
+                    throw new Error('cannot accept type: ' + typeof keyValue);
+                var keyCode = makeymakeyParseKey(keyValue);
+            }
+            catch (e) {
+                util.compiler.warn('makeymakey key generation error', e);
+                return;
+            }
+            const key = P.runtime.getKeyCode(keyCode);
+            util.target.addWhenKeyPressedHandler(key, util.startingFunction);
+        },
+    };
+    hatLibrary['procedures_definition'] = {
+        handle(util) {
+            const customBlockId = util.block.inputs.custom_block[1];
+            const mutation = util.compiler.blocks[customBlockId].mutation;
+            const proccode = mutation.proccode;
+            if (!util.target.procedures[proccode]) {
+                const warp = typeof mutation.warp === 'string' ? mutation.warp === 'true' : mutation.warp;
+                const argumentNames = JSON.parse(mutation.argumentnames);
+                const procedure = new P.sb3.Scratch3Procedure(util.startingFunction, warp, argumentNames);
+                util.target.procedures[proccode] = procedure;
+            }
+        },
+        postcompile(compiler, source, hat) {
+            return source + 'endCall(); return;\n';
+        },
+        precompile(compiler, hat) {
+            const customBlockId = hat.inputs.custom_block[1];
+            const mutation = compiler.blocks[customBlockId].mutation;
+            const warp = typeof mutation.warp === 'string' ? mutation.warp === 'true' : mutation.warp;
+            const argumentNames = JSON.parse(mutation.argumentnames);
+            compiler.state.isProcedure = true;
+            compiler.state.argumentNames = argumentNames;
+            if (warp) {
+                compiler.state.isWarp = true;
+            }
+            return '';
+        },
+    };
+    watcherLibrary['data_variable'] = {
+        init(watcher) {
+            const name = watcher.params.VARIABLE;
+            watcher.target.watchers[name] = watcher;
+        },
+        set(watcher, value) {
+            const name = watcher.params.VARIABLE;
+            watcher.target.vars[name] = value;
+        },
+        evaluate(watcher) {
+            const name = watcher.params.VARIABLE;
+            return watcher.target.vars[name];
+        },
+        getLabel(watcher) {
+            return watcher.params.VARIABLE;
+        },
+    };
+    watcherLibrary['looks_backdropnumbername'] = {
+        evaluate(watcher) {
+            const target = watcher.stage;
+            const param = watcher.params.NUMBER_NAME;
+            if (param === 'number') {
+                return target.currentCostumeIndex + 1;
+            }
+            else {
+                return target.costumes[target.currentCostumeIndex].name;
+            }
+        },
+        getLabel(watcher) {
+            return 'backdrop ' + watcher.params.NUMBER_NAME;
+        },
+    };
+    watcherLibrary['looks_costumenumbername'] = {
+        evaluate(watcher) {
+            const target = watcher.target;
+            const param = watcher.params.NUMBER_NAME;
+            if (param === 'number') {
+                return target.currentCostumeIndex + 1;
+            }
+            else {
+                return target.costumes[target.currentCostumeIndex].name;
+            }
+        },
+        getLabel(watcher) {
+            return 'costume ' + watcher.params.NUMBER_NAME;
+        },
+    };
+    watcherLibrary['looks_size'] = {
+        evaluate(watcher) { return P.core.isSprite(watcher.target) ? watcher.target.scale * 100 : 100; },
+        getLabel() { return 'size'; },
+    };
+    watcherLibrary['motion_direction'] = {
+        evaluate(watcher) { return P.core.isSprite(watcher.target) ? watcher.target.direction : 0; },
+        getLabel() { return 'direction'; },
+    };
+    watcherLibrary['motion_xposition'] = {
+        evaluate(watcher) { return watcher.target.scratchX; },
+        getLabel() { return 'x position'; },
+    };
+    watcherLibrary['motion_yposition'] = {
+        evaluate(watcher) { return watcher.target.scratchY; },
+        getLabel() { return 'y position'; },
+    };
+    watcherLibrary['music_getTempo'] = {
+        evaluate(watcher) { return watcher.stage.tempoBPM; },
+        getLabel() { return 'Music: tempo'; },
+    };
+    watcherLibrary['sensing_answer'] = {
+        evaluate(watcher) { return watcher.stage.answer; },
+        getLabel() { return 'answer'; },
+    };
+    watcherLibrary['sensing_current'] = {
+        evaluate(watcher) {
+            const param = watcher.params.CURRENTMENU.toLowerCase();
+            switch (param) {
+                case 'year': return new Date().getFullYear();
+                case 'month': return new Date().getMonth() + 1;
+                case 'date': return new Date().getDate();
+                case 'dayofweek': return new Date().getDay() + 1;
+                case 'hour': return new Date().getHours();
+                case 'minute': return new Date().getMinutes();
+                case 'second': return new Date().getSeconds();
+            }
+            return 0;
+        },
+        getLabel(watcher) {
+            const param = watcher.params.CURRENTMENU.toLowerCase();
+            if (param === 'dayofweek') {
+                return 'day of week';
+            }
+            return param;
+        }
+    };
+    watcherLibrary['sensing_loudness'] = {
+        init(watcher) {
+            watcher.stage.initMicrophone();
+        },
+        evaluate(watcher) {
+            if (watcher.stage.microphone) {
+                return watcher.stage.microphone.getLoudness();
+            }
+            else {
+                return -1;
+            }
+        },
+        getLabel() { return 'loudness'; },
+    };
+    watcherLibrary['sensing_timer'] = {
+        evaluate(watcher) {
+            return (watcher.stage.runtime.now() - watcher.stage.runtime.timerStart) / 1000;
+        },
+        getLabel() { return 'timer'; },
+    };
+    watcherLibrary['sensing_username'] = {
+        evaluate(watcher) { return watcher.stage.username; },
+        getLabel() { return 'username'; },
+    };
+    watcherLibrary['sound_volume'] = {
+        evaluate(watcher) { return watcher.target.volume * 100; },
+        getLabel() { return 'volume'; },
+    };
+}());
+var P;
+(function (P) {
+    var ext;
+    (function (ext) {
+        class Extension {
+            constructor(stage) {
+                this.stage = stage;
+            }
+            destroy() {
+            }
+            onstart() {
+            }
+            onpause() {
+            }
+            update() {
+            }
+        }
+        ext.Extension = Extension;
+    })(ext = P.ext || (P.ext = {}));
+})(P || (P = {}));
+var P;
+(function (P) {
+    var ext;
+    (function (ext) {
+        var cloud;
+        (function (cloud) {
+            const UPDATE_INTERVAL = 1000 / 15;
+            function getAllCloudVariables(stage) {
+                const result = {};
+                for (const variable of stage.cloudVariables) {
+                    result[variable] = stage.vars[variable];
+                }
+                return result;
+            }
+            cloud.getAllCloudVariables = getAllCloudVariables;
+            function isCloudDataMessage(data) {
+                if (typeof data !== 'object' || !data) {
+                    return false;
+                }
+                return typeof data.method === 'string';
+            }
+            function isCloudSetMessage(data) {
+                return isCloudDataMessage(data) &&
+                    typeof data.name === 'string' &&
+                    typeof data.value !== 'undefined';
+            }
+            class WebSocketCloudHandler extends P.ext.Extension {
+                constructor(stage, hosts, id) {
+                    super(stage);
+                    this.id = id;
+                    this.ws = null;
+                    this.queuedVariableChanges = [];
+                    this.updateInterval = null;
+                    this.reconnectTimeout = null;
+                    this.shouldReconnect = true;
+                    this.failures = 0;
+                    this.hosts = Array.isArray(hosts) ? hosts : [hosts];
+                    this.logPrefix = '[cloud-ws ' + this.hosts[0] + ']';
+                    this.username = this.stage.username;
+                    this.interfaceStatusIndicator = document.createElement('div');
+                    this.interfaceStatusIndicator.className = 'phosphorus-cloud-status-indicator';
+                    stage.ui.appendChild(this.interfaceStatusIndicator);
+                    this.handleUpdateInterval = this.handleUpdateInterval.bind(this);
+                    this.connect();
+                }
+                variableChanged(name) {
+                    if (this.queuedVariableChanges.indexOf(name) > -1) {
+                        return;
+                    }
+                    this.queuedVariableChanges.push(name);
+                    if (this.updateInterval === null) {
+                        this.handleUpdateInterval();
+                        this.startUpdateInterval();
+                    }
+                }
+                handleUpdateInterval() {
+                    if (this.queuedVariableChanges.length === 0) {
+                        this.stopUpdateInterval();
+                        return;
+                    }
+                    if (this.ws === null || this.ws.readyState !== this.ws.OPEN || this.ws.bufferedAmount > 16384) {
+                        return;
+                    }
+                    const variableName = this.queuedVariableChanges.shift();
+                    const value = this.getVariable(variableName);
+                    this.send({
+                        method: 'set',
+                        name: variableName,
+                        value: value,
+                    });
+                }
+                send(data) {
+                    if (!this.ws)
+                        return;
+                    this.ws.send(JSON.stringify(data));
+                }
+                getVariable(name) {
+                    return this.stage.vars[name];
+                }
+                setVariable(name, value) {
+                    this.stage.vars[name] = value;
+                }
+                terminateConnection(code = 1000) {
+                    if (this.ws !== null) {
+                        this.ws.close(code);
+                        this.ws = null;
+                    }
+                }
+                connect() {
+                    if (this.ws !== null) {
+                        throw new Error('already connected');
+                    }
+                    this.setStatusText('Connecting...');
+                    console.log(this.logPrefix, 'connecting');
+                    this.ws = new WebSocket(this.hosts[this.failures % this.hosts.length]);
+                    this.shouldReconnect = true;
+                    this.ws.onopen = () => {
+                        console.log(this.logPrefix, 'connected');
+                        this.setStatusText('Connected');
+                        this.setStatusVisible(false);
+                        this.failures = 0;
+                        this.send({
+                            method: 'handshake',
+                            project_id: this.id,
+                            user: this.username
+                        });
+                    };
+                    this.ws.onmessage = (e) => {
+                        try {
+                            const lines = e.data.split('\n');
+                            for (const line of lines) {
+                                const data = JSON.parse(line);
+                                this.handleMessage(data);
+                            }
+                            if (!this.stage.runtime.isRunning) {
+                                this.stage.draw();
+                            }
+                        }
+                        catch (err) {
+                            console.warn('error parsing cloud server message', e.data, err);
+                        }
+                    };
+                    this.ws.onclose = (e) => {
+                        const code = e.code;
+                        this.ws = null;
+                        console.warn(this.logPrefix, 'closed', code);
+                        if (code === 4002) {
+                            this.setStatusText('Username is invalid. Change your username to connect.');
+                            this.hideStatusAfterDelay();
+                            console.error(this.logPrefix, 'error: Username');
+                        }
+                        else if (code === 4004) {
+                            this.setStatusText('Cloud variables are disabled for this project.');
+                            this.hideStatusAfterDelay();
+                            console.error(this.logPrefix, 'error: Project is disabled.');
+                        }
+                        else {
+                            this.reconnect();
+                        }
+                    };
+                    this.ws.onerror = (e) => {
+                        console.warn(this.logPrefix, 'error', e);
+                    };
+                }
+                reconnect() {
+                    if (!this.shouldReconnect) {
+                        return;
+                    }
+                    this.terminateConnection();
+                    if (this.reconnectTimeout) {
+                        clearTimeout(this.reconnectTimeout);
+                    }
+                    else {
+                        this.failures++;
+                    }
+                    this.setStatusText('Connection lost, reconnecting...');
+                    const delayTime = 2 ** this.failures * 1000 * Math.random();
+                    console.log(this.logPrefix, 'reconnecting in', delayTime);
+                    this.reconnectTimeout = setTimeout(() => {
+                        this.reconnectTimeout = null;
+                        this.connect();
+                    }, delayTime);
+                }
+                disconnect() {
+                    console.log(this.logPrefix, 'disconnecting');
+                    this.shouldReconnect = false;
+                    this.terminateConnection();
+                }
+                handleMessage(data) {
+                    if (!isCloudSetMessage(data)) {
+                        return;
+                    }
+                    const { name: variableName, value } = data;
+                    if (this.stage.cloudVariables.indexOf(variableName) === -1) {
+                        throw new Error('invalid variable name');
+                    }
+                    this.setVariable(variableName, value);
+                }
+                startUpdateInterval() {
+                    if (this.updateInterval !== null) {
+                        return;
+                    }
+                    this.updateInterval = setInterval(this.handleUpdateInterval, UPDATE_INTERVAL);
+                }
+                stopUpdateInterval() {
+                    if (this.updateInterval === null) {
+                        return;
+                    }
+                    clearInterval(this.updateInterval);
+                    this.updateInterval = null;
+                }
+                setStatusText(text) {
+                    this.interfaceStatusIndicator.textContent = `☁ ${text}`;
+                    this.setStatusVisible(true);
+                }
+                setStatusVisible(visible) {
+                    clearTimeout(this.hideStatusTimeout);
+                    this.interfaceStatusIndicator.classList.toggle('phosphorus-cloud-status-indicator-hidden', !visible);
+                }
+                hideStatusAfterDelay() {
+                    this.hideStatusTimeout = setTimeout(() => {
+                        this.setStatusVisible(false);
+                    }, 4000);
+                }
+                onstart() {
+                    if (this.queuedVariableChanges.length > 0) {
+                        this.startUpdateInterval();
+                    }
+                }
+                onpause() {
+                    this.stopUpdateInterval();
+                }
+                update() {
+                    if (this.stage.username !== this.username) {
+                        console.log(this.logPrefix, 'username changed to', this.stage.username);
+                        this.username = this.stage.username;
+                        this.terminateConnection(4100);
+                        this.reconnect();
+                    }
+                }
+                destroy() {
+                    this.stopUpdateInterval();
+                    this.disconnect();
+                }
+            }
+            cloud.WebSocketCloudHandler = WebSocketCloudHandler;
+            class LocalStorageCloudHandler extends P.ext.Extension {
+                constructor(stage, id) {
+                    super(stage);
+                    this.storageKey = 'cloud-data:' + id;
+                    this.load();
+                    this.save = this.save.bind(this);
+                }
+                variableChanged(name) {
+                    this.save();
+                }
+                load() {
+                    try {
+                        const savedData = localStorage.getItem(this.storageKey);
+                        if (savedData === null) {
+                            return;
+                        }
+                        const parsedData = JSON.parse(savedData);
+                        for (const key of Object.keys(parsedData)) {
+                            if (this.stage.cloudVariables.indexOf(key) > -1) {
+                                this.stage.vars[key] = parsedData[key];
+                            }
+                        }
+                    }
+                    catch (e) {
+                        console.warn('cannot read from localStorage', e);
+                    }
+                }
+                save() {
+                    try {
+                        localStorage.setItem(this.storageKey, JSON.stringify(getAllCloudVariables(this.stage)));
+                    }
+                    catch (e) {
+                        console.warn('cannot save to localStorage', e);
+                    }
+                }
+            }
+            cloud.LocalStorageCloudHandler = LocalStorageCloudHandler;
+        })(cloud = ext.cloud || (ext.cloud = {}));
+    })(ext = P.ext || (P.ext = {}));
+})(P || (P = {}));
+/*!
+Parts of this file (microphone.ts) are derived from https://github.com/LLK/scratch-audio/blob/develop/src/Loudness.js
+*/
+var P;
+(function (P) {
+    var ext;
+    (function (ext) {
+        var microphone;
+        (function (microphone_1) {
+            let microphone = null;
+            let state = 0;
+            const CACHE_TIME = 1000 / 30;
+            function createAnalyzerDataArray(analyzer) {
+                if (!!analyzer.getFloatTimeDomainData) {
+                    return new Float32Array(analyzer.fftSize);
+                }
+                else if (!!analyzer.getByteTimeDomainData) {
+                    return new Uint8Array(analyzer.fftSize);
+                }
+                else {
+                    throw new Error('Analyzer node does not support getFloatTimeDomainData or getByteTimeDomainData');
+                }
+            }
+            function connect() {
+                if (state !== 0) {
+                    return;
+                }
+                if (!P.audio.context) {
+                    console.warn('Cannot connect to microphone without audio context.');
+                    state = 3;
+                    return;
+                }
+                if (!navigator.mediaDevices) {
+                    console.warn('Cannot access media devices, probably running in insecure (non-HTTPS) context.');
+                    state = 3;
+                    return;
+                }
+                state = 2;
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then((mediaStream) => {
+                    const source = P.audio.context.createMediaStreamSource(mediaStream);
+                    const analyzer = P.audio.context.createAnalyser();
+                    if (!analyzer.getFloatTimeDomainData) {
+                        throw new Error('Missing API getFloatTimeDomainData');
+                    }
+                    source.connect(analyzer);
+                    microphone = {
+                        source: source,
+                        stream: mediaStream,
+                        analyzer,
+                        dataArray: createAnalyzerDataArray(analyzer),
+                        lastValue: -1,
+                        lastCheck: 0,
+                    };
+                    state = 1;
+                })
+                    .catch((err) => {
+                    console.warn('Cannot connect to microphone: ' + err);
+                    state = 3;
+                });
+            }
+            function reinitAnalyser() {
+                if (!microphone) {
+                    throw new Error('Microphone not connected; cannot re-init something that does not exist!');
+                }
+                const analyzer = P.audio.context.createAnalyser();
+                microphone.source.disconnect();
+                microphone.source.connect(analyzer);
+                microphone.analyzer = analyzer;
+                if (microphone.dataArray.length !== analyzer.fftSize) {
+                    microphone.dataArray = createAnalyzerDataArray(analyzer);
+                }
+            }
+            function getLoudness() {
+                if (microphone === null) {
+                    connect();
+                    return -1;
+                }
+                if (!microphone.stream.active) {
+                    return -1;
+                }
+                if (Date.now() - microphone.lastCheck < CACHE_TIME) {
+                    return microphone.lastValue;
+                }
+                let sum = 0;
+                if (microphone.dataArray instanceof Float32Array) {
+                    microphone.analyzer.getFloatTimeDomainData(microphone.dataArray);
+                    for (let i = 0; i < microphone.dataArray.length; i++) {
+                        sum += Math.pow(microphone.dataArray[i], 2);
+                    }
+                }
+                else {
+                    microphone.analyzer.getByteTimeDomainData(microphone.dataArray);
+                    for (let i = 0; i < microphone.dataArray.length; i++) {
+                        sum += Math.pow((microphone.dataArray[i] - 128) / 128, 2);
+                    }
+                }
+                let rms = Math.sqrt(sum / microphone.dataArray.length);
+                if (microphone.lastValue !== -1) {
+                    rms = Math.max(rms, microphone.lastValue * 0.6);
+                }
+                microphone.lastValue = rms;
+                rms *= 1.63;
+                rms = Math.sqrt(rms);
+                rms = Math.round(rms * 100);
+                rms = Math.min(rms, 100);
+                return rms;
+            }
+            class MicrophoneExtension extends P.ext.Extension {
+                getLoudness() {
+                    return getLoudness();
+                }
+                onstart() {
+                    if (microphone) {
+                        reinitAnalyser();
+                    }
+                }
+            }
+            microphone_1.MicrophoneExtension = MicrophoneExtension;
+        })(microphone = ext.microphone || (ext.microphone = {}));
+    })(ext = P.ext || (P.ext = {}));
+})(P || (P = {}));
+var P;
+(function (P) {
+    var ext;
+    (function (ext) {
+        var tts;
+        (function (tts) {
+            let Gender;
+            (function (Gender) {
+                Gender[Gender["Male"] = 0] = "Male";
+                Gender[Gender["Female"] = 1] = "Female";
+                Gender[Gender["Unknown"] = 2] = "Unknown";
+            })(Gender = tts.Gender || (tts.Gender = {}));
+            const femaleVoices = [
+                /Zira/,
+                /female/i,
+            ];
+            const maleVoices = [
+                /David/,
+                /\bmale/i,
+            ];
+            const scratchVoices = {
+                ALTO: { gender: Gender.Female, pitch: 1, rate: 1 },
+                TENOR: { gender: Gender.Male, pitch: 1.5, rate: 1 },
+                GIANT: { gender: Gender.Male, pitch: 0.5, rate: 0.75 },
+                SQUEAK: { gender: Gender.Female, pitch: 2, rate: 1.5 },
+                KITTEN: { gender: Gender.Female, pitch: 2, rate: 1 },
+            };
+            class TextToSpeechExtension extends P.ext.Extension {
+                constructor(stage) {
+                    super(stage);
+                    this.language = 'en';
+                    this.voice = 'ALTO';
+                    this.supported = 'speechSynthesis' in window;
+                    if (!this.supported) {
+                        console.warn('TTS extension is not supported in this browser: it requires the speechSynthesis API https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis');
+                    }
+                    else {
+                        speechSynthesis.getVoices();
+                    }
+                }
+                getVoiceGender(voice) {
+                    if (femaleVoices.some((i) => i.test(voice.name)))
+                        return Gender.Female;
+                    if (maleVoices.some((i) => i.test(voice.name)))
+                        return Gender.Male;
+                    return Gender.Unknown;
+                }
+                getVoiceData(voiceName) {
+                    const matchesGender = (voice) => this.getVoiceGender(voice) === voiceGender;
+                    const voice = scratchVoices[voiceName];
+                    const rate = voice.rate;
+                    const pitch = voice.pitch;
+                    const voiceGender = scratchVoices[this.voice].gender;
+                    const voices = speechSynthesis.getVoices();
+                    const matchesLanguage = voices.filter((i) => i.lang.substr(0, 2) === this.language.substr(0, 2));
+                    let candidates = matchesLanguage.filter(matchesGender);
+                    if (candidates.length === 0)
+                        candidates = matchesLanguage;
+                    if (candidates.length === 0)
+                        candidates = voices;
+                    const defaultVoice = candidates.find((i) => i.default);
+                    return {
+                        voice: defaultVoice || candidates[0] || null,
+                        pitch,
+                        rate,
+                    };
+                }
+                setVoice(voice) {
+                    if (!scratchVoices.hasOwnProperty(voice)) {
+                        return;
+                    }
+                    this.voice = voice;
+                }
+                setLanguage(language) {
+                    this.language = language;
+                }
+                speak(text) {
+                    if (!this.supported) {
+                        return Promise.resolve();
+                    }
+                    if (this.voice === 'KITTEN')
+                        text = text.replace(/\w+?\b/g, 'meow');
+                    return new Promise((resolve, reject) => {
+                        const end = () => resolve();
+                        const utterance = new SpeechSynthesisUtterance(text);
+                        utterance.lang = this.language;
+                        const { voice, rate, pitch } = this.getVoiceData(this.voice);
+                        utterance.voice = voice;
+                        utterance.rate = rate;
+                        utterance.pitch = pitch;
+                        utterance.onerror = end;
+                        utterance.onend = end;
+                        speechSynthesis.speak(utterance);
+                        speechSynthesis.resume();
+                    });
+                }
+                onstart() {
+                    if (this.supported) {
+                        speechSynthesis.resume();
+                    }
+                }
+                onpause() {
+                    if (this.supported) {
+                        speechSynthesis.pause();
+                    }
+                }
+                destroy() {
+                    if (this.supported) {
+                        speechSynthesis.cancel();
+                    }
+                }
+            }
+            tts.TextToSpeechExtension = TextToSpeechExtension;
+        })(tts = ext.tts || (ext.tts = {}));
+    })(ext = P.ext || (P.ext = {}));
+})(P || (P = {}));
+var P;
+(function (P) {
+    var renderer;
+    (function (renderer_1) {
+        var canvas2d;
+        (function (canvas2d) {
+            function getCSSFilter(filters) {
+                let filter = '';
+                if (filters.brightness) {
+                    filter += 'brightness(' + (100 + filters.brightness) + '%) ';
+                }
+                if (filters.color) {
+                    if (filters.color === Infinity) {
+                        filter += 'grayscale(100%) ';
+                    }
+                    else {
+                        filter += 'hue-rotate(' + (filters.color / 200 * 360) + 'deg) ';
+                    }
+                }
+                return filter;
+            }
+            function create2dCanvas() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 480;
+                canvas.height = 360;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    throw new Error('Cannot get 2d rendering context in create2dCanvas');
+                }
+                ctx.imageSmoothingEnabled = false;
+                return { canvas, ctx };
+            }
+            const COLOR_MASK = 0b111110001111100011110000;
+            class SpriteRenderer2D {
+                constructor() {
+                    this.noEffects = false;
+                    this.imageSmoothingEnabled = false;
+                    const { canvas, ctx } = create2dCanvas();
+                    this.canvas = canvas;
+                    this.ctx = ctx;
+                }
+                reset(scale) {
+                    this._reset(this.ctx, scale);
+                }
+                drawChild(c) {
+                    this._drawChild(c, this.ctx);
+                }
+                drawObjects(children) {
+                    for (var i = 0; i < children.length; i++) {
+                        var child = children[i];
+                        if (!child.visible) {
+                            continue;
+                        }
+                        this.drawChild(child);
+                    }
+                }
+                _reset(ctx, scale) {
+                    const effectiveScale = scale * P.config.scale;
+                    const width = Math.max(1, 480 * effectiveScale);
+                    const height = Math.max(1, 360 * effectiveScale);
+                    ctx.canvas.width = width;
+                    ctx.canvas.height = height;
+                    ctx.scale(effectiveScale, effectiveScale);
+                }
+                _drawChild(c, ctx) {
+                    const costume = c.costumes[c.currentCostumeIndex];
+                    if (!costume) {
+                        return;
+                    }
+                    ctx.save();
+                    const globalScale = c.stage.zoom * P.config.scale;
+                    ctx.translate(((c.scratchX + 240) * globalScale | 0) / globalScale, ((180 - c.scratchY) * globalScale | 0) / globalScale);
+                    let objectScale = costume.scale;
+                    if (P.core.isSprite(c)) {
+                        if (c.rotationStyle === 0) {
+                            ctx.rotate((c.direction - 90) * Math.PI / 180);
+                        }
+                        else if (c.rotationStyle === 1 && c.direction < 0) {
+                            ctx.scale(-1, 1);
+                        }
+                        objectScale *= c.scale;
+                    }
+                    if (costume.isScalable) {
+                        costume.requestSize(objectScale * globalScale);
+                    }
+                    ctx.imageSmoothingEnabled = costume.isScalable || this.imageSmoothingEnabled;
+                    const image = costume.getImage();
+                    const x = -costume.rotationCenterX * objectScale | 0;
+                    const y = -costume.rotationCenterY * objectScale | 0;
+                    const w = costume.width * objectScale;
+                    const h = costume.height * objectScale;
+                    if (w < 1 || h < 1) {
+                        ctx.restore();
+                        return;
+                    }
+                    if (!this.noEffects) {
+                        ctx.globalAlpha = Math.max(0, Math.min(1, 1 - c.filters.ghost / 100));
+                        if (c.filters.brightness !== 0 && c.filters.color === 0) {
+                            workingRenderer.canvas.width = w;
+                            workingRenderer.canvas.height = h;
+                            workingRenderer.ctx.save();
+                            workingRenderer.ctx.imageSmoothingEnabled = false;
+                            workingRenderer.ctx.translate(0, 0);
+                            workingRenderer.ctx.drawImage(image, 0, 0, w, h);
+                            workingRenderer.ctx.globalCompositeOperation = 'source-atop';
+                            workingRenderer.ctx.globalAlpha = Math.abs(c.filters.brightness / 100);
+                            if (c.filters.brightness > 0) {
+                                workingRenderer.ctx.fillStyle = 'white';
+                            }
+                            else {
+                                workingRenderer.ctx.fillStyle = 'black';
+                            }
+                            workingRenderer.ctx.fillRect(0, 0, w, h);
+                            ctx.drawImage(workingRenderer.canvas, x, y);
+                            workingRenderer.ctx.restore();
+                        }
+                        else {
+                            const filter = getCSSFilter(c.filters);
+                            if (filter !== '') {
+                                ctx.filter = filter;
+                            }
+                            ctx.drawImage(image, x, y, w, h);
+                        }
+                    }
+                    else {
+                        ctx.drawImage(image, x, y, w, h);
+                    }
+                    ctx.restore();
+                }
+            }
+            canvas2d.SpriteRenderer2D = SpriteRenderer2D;
+            const workingRenderer = new SpriteRenderer2D();
+            const workingRenderer2 = new SpriteRenderer2D();
+            class ProjectRenderer2D extends SpriteRenderer2D {
+                constructor(stage) {
+                    super();
+                    this.stage = stage;
+                    this.zoom = 1;
+                    this.penScalingEnabled = true;
+                    this.penModified = false;
+                    this.penTargetZoom = -1;
+                    this.penZoom = 1;
+                    this.stageCostumeIndex = -1;
+                    const { ctx: stageContext, canvas: stageLayer } = create2dCanvas();
+                    this.stageContext = stageContext;
+                    this.stageLayer = stageLayer;
+                    const { ctx: penContext, canvas: penLayer } = create2dCanvas();
+                    this.penContext = penContext;
+                    this.penLayer = penLayer;
+                }
+                onStageFiltersChanged() {
+                    this.renderStageCostume(this.zoom);
+                }
+                renderStageCostume(scale) {
+                    this._reset(this.stageContext, scale);
+                    this._drawChild(this.stage, this.stageContext);
+                }
+                init(root) {
+                    root.appendChild(this.stageLayer);
+                    root.appendChild(this.penLayer);
+                    root.appendChild(this.canvas);
+                }
+                destroy() {
+                }
+                drawFrame() {
+                    this.reset(this.zoom);
+                    this.drawObjects(this.stage.children);
+                    if (this.stage.currentCostumeIndex !== this.stageCostumeIndex) {
+                        this.stageCostumeIndex = this.stage.currentCostumeIndex;
+                        this.renderStageCostume(this.zoom);
+                    }
+                }
+                drawAllExcept(renderer, skip) {
+                    renderer.drawChild(this.stage);
+                    renderer.ctx.drawImage(this.penLayer, 0, 0, 480, 360);
+                    for (var i = 0; i < this.stage.children.length; i++) {
+                        var child = this.stage.children[i];
+                        if (!child.visible || child === skip) {
+                            continue;
+                        }
+                        renderer.drawChild(child);
+                    }
+                }
+                resize(zoom) {
+                    this.zoom = zoom;
+                    this.resizePen(zoom);
+                    this.renderStageCostume(this.zoom);
+                }
+                resizePen(zoom) {
+                    if (!this.penScalingEnabled) {
+                        return;
+                    }
+                    if (zoom > this.penZoom) {
+                        this.penZoom = zoom;
+                        workingRenderer.canvas.width = this.penLayer.width;
+                        workingRenderer.canvas.height = this.penLayer.height;
+                        workingRenderer.ctx.drawImage(this.penLayer, 0, 0);
+                        this._reset(this.penContext, zoom);
+                        this.penContext.drawImage(workingRenderer.canvas, 0, 0, 480, 360);
+                    }
+                    else if (!this.penModified) {
+                        this.penZoom = zoom;
+                        this._reset(this.penContext, zoom);
+                    }
+                    else {
+                        this.penTargetZoom = zoom;
+                    }
+                }
+                penClear() {
+                    this.penModified = false;
+                    if (this.penTargetZoom !== -1) {
+                        this._reset(this.penContext, this.penTargetZoom);
+                        this.penZoom = this.penTargetZoom;
+                        this.penTargetZoom = -1;
+                    }
+                    this.penContext.clearRect(0, 0, 480, 360);
+                }
+                penDot(color, size, x, y) {
+                    this.penModified = true;
+                    this.penContext.fillStyle = color.toCSS();
+                    this.penContext.beginPath();
+                    this.penContext.arc(240 + x, 180 - y, size / 2, 0, 2 * Math.PI, false);
+                    this.penContext.fill();
+                }
+                penLine(color, size, x1, y1, x2, y2) {
+                    this.penModified = true;
+                    this.penContext.lineCap = 'round';
+                    if (this.penZoom === 1) {
+                        if (size % 2 > .5 && size % 2 < 1.5) {
+                            x1 -= .5;
+                            y1 -= .5;
+                            x2 -= .5;
+                            y2 -= .5;
+                        }
+                    }
+                    this.penContext.strokeStyle = color.toCSS();
+                    this.penContext.lineWidth = size;
+                    this.penContext.beginPath();
+                    this.penContext.moveTo(240 + x1, 180 - y1);
+                    this.penContext.lineTo(240 + x2, 180 - y2);
+                    this.penContext.stroke();
+                }
+                penStamp(sprite) {
+                    this.penModified = true;
+                    this._drawChild(sprite, this.penContext);
+                }
+                spriteTouchesPoint(sprite, x, y) {
+                    const bounds = sprite.rotatedBounds();
+                    if (x < bounds.left || y < bounds.bottom || x > bounds.right || y > bounds.top || sprite.scale === 0) {
+                        return false;
+                    }
+                    const costume = sprite.costumes[sprite.currentCostumeIndex];
+                    var cx = (x - sprite.scratchX) / sprite.scale;
+                    var cy = (sprite.scratchY - y) / sprite.scale;
+                    if (sprite.rotationStyle === 0 && sprite.direction !== 90) {
+                        const d = (90 - sprite.direction) * Math.PI / 180;
+                        const ox = cx;
+                        const s = Math.sin(d), c = Math.cos(d);
+                        cx = c * ox - s * cy;
+                        cy = s * ox + c * cy;
+                    }
+                    else if (sprite.rotationStyle === 1 && sprite.direction < 0) {
+                        cx = -cx;
+                    }
+                    let positionX = Math.round(cx / costume.scale + costume.rotationCenterX);
+                    let positionY = Math.round(cy / costume.scale + costume.rotationCenterY);
+                    if (costume instanceof P.core.VectorCostume) {
+                        positionX *= costume.currentScale;
+                        positionY *= costume.currentScale;
+                    }
+                    if (!Number.isFinite(positionX) || !Number.isFinite(positionY)) {
+                        return false;
+                    }
+                    const data = costume.getContext().getImageData(positionX, positionY, 1, 1).data;
+                    return data[3] !== 0;
+                }
+                spritesIntersect(spriteA, otherSprites) {
+                    const mb = spriteA.rotatedBounds();
+                    for (var i = 0; i < otherSprites.length; i++) {
+                        const spriteB = otherSprites[i];
+                        if (!spriteB.visible || spriteA === spriteB) {
+                            continue;
+                        }
+                        const ob = spriteB.rotatedBounds();
+                        if (mb.bottom >= ob.top || ob.bottom >= mb.top || mb.left >= ob.right || ob.left >= mb.right) {
+                            continue;
+                        }
+                        const left = Math.max(mb.left, ob.left);
+                        const top = Math.min(mb.top, ob.top);
+                        const right = Math.min(mb.right, ob.right);
+                        const bottom = Math.max(mb.bottom, ob.bottom);
+                        const width = right - left;
+                        const height = top - bottom;
+                        if (width < 1 || height < 1 || width !== width || height !== height) {
+                            continue;
+                        }
+                        workingRenderer.canvas.width = width;
+                        workingRenderer.canvas.height = height;
+                        workingRenderer.ctx.save();
+                        workingRenderer.noEffects = true;
+                        workingRenderer.ctx.translate(-(left + 240), -(180 - top));
+                        workingRenderer.drawChild(spriteA);
+                        workingRenderer.ctx.globalCompositeOperation = 'source-in';
+                        workingRenderer.drawChild(spriteB);
+                        workingRenderer.noEffects = false;
+                        workingRenderer.ctx.restore();
+                        const data = workingRenderer.ctx.getImageData(0, 0, width, height).data;
+                        const length = data.length;
+                        for (var j = 0; j < length; j += 4) {
+                            if (data[j + 3]) {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                }
+                spriteTouchesColor(sprite, color) {
+                    const b = sprite.rotatedBounds();
+                    const width = b.right - b.left;
+                    const height = b.top - b.bottom;
+                    if (width < 1 || height < 1 || width !== width || height !== height) {
+                        return false;
+                    }
+                    workingRenderer.canvas.width = width;
+                    workingRenderer.canvas.height = height;
+                    workingRenderer.ctx.fillStyle = 'white';
+                    workingRenderer.ctx.fillRect(0, 0, width, height);
+                    workingRenderer.ctx.save();
+                    workingRenderer.ctx.translate(-(240 + b.left), -(180 - b.top));
+                    this.drawAllExcept(workingRenderer, sprite);
+                    workingRenderer.ctx.globalCompositeOperation = 'destination-in';
+                    workingRenderer.drawChild(sprite);
+                    workingRenderer.ctx.restore();
+                    const data = workingRenderer.ctx.getImageData(0, 0, width, height).data;
+                    color = color & COLOR_MASK;
+                    const length = data.length;
+                    for (var i = 0; i < length; i += 4) {
+                        if (((data[i] << 16 | data[i + 1] << 8 | data[i + 2]) & COLOR_MASK) === color && data[i + 3]) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+                spriteColorTouchesColor(sprite, spriteColor, otherColor) {
+                    var rb = sprite.rotatedBounds();
+                    const width = rb.right - rb.left;
+                    const height = rb.top - rb.bottom;
+                    if (width < 1 || height < 1 || width !== width || height !== height) {
+                        return false;
+                    }
+                    workingRenderer.canvas.width = workingRenderer2.canvas.width = width;
+                    workingRenderer.canvas.height = workingRenderer2.canvas.height = height;
+                    workingRenderer.ctx.save();
+                    workingRenderer2.ctx.save();
+                    workingRenderer.ctx.translate(-(240 + rb.left), -(180 - rb.top));
+                    workingRenderer2.ctx.translate(-(240 + rb.left), -(180 - rb.top));
+                    this.drawAllExcept(workingRenderer, sprite);
+                    workingRenderer2.drawChild(sprite);
+                    workingRenderer.ctx.restore();
+                    workingRenderer2.ctx.restore();
+                    var dataA = workingRenderer.ctx.getImageData(0, 0, width, height).data;
+                    var dataB = workingRenderer2.ctx.getImageData(0, 0, width, height).data;
+                    spriteColor = spriteColor & COLOR_MASK;
+                    otherColor = otherColor & COLOR_MASK;
+                    var length = dataA.length;
+                    for (var i = 0; i < length; i += 4) {
+                        var touchesSource = ((dataB[i] << 16 | dataB[i + 1] << 8 | dataB[i + 2]) & COLOR_MASK) === spriteColor && dataB[i + 3];
+                        var touchesOther = ((dataA[i] << 16 | dataA[i + 1] << 8 | dataA[i + 2]) & COLOR_MASK) === otherColor && dataA[i + 3];
+                        if (touchesSource && touchesOther) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            }
+            canvas2d.ProjectRenderer2D = ProjectRenderer2D;
+        })(canvas2d = renderer_1.canvas2d || (renderer_1.canvas2d = {}));
+    })(renderer = P.renderer || (P.renderer = {}));
+})(P || (P = {}));
+var P;
+(function (P) {
+    var m3;
+    (function (m3) {
+        function multiply(out, other) {
+            const a0 = out[0];
+            const a1 = out[1];
+            const a2 = out[2];
+            const a3 = out[3];
+            const a4 = out[4];
+            const a5 = out[5];
+            const a6 = out[6];
+            const a7 = out[7];
+            const a8 = out[8];
+            const b0 = other[0];
+            const b1 = other[1];
+            const b2 = other[2];
+            const b3 = other[3];
+            const b4 = other[4];
+            const b5 = other[5];
+            const b6 = other[6];
+            const b7 = other[7];
+            const b8 = other[8];
+            out[0] = b0 * a0 + b1 * a3 + b2 * a6;
+            out[1] = b0 * a1 + b1 * a4 + b2 * a7;
+            out[2] = b0 * a2 + b1 * a5 + b2 * a8;
+            out[3] = b3 * a0 + b4 * a3 + b5 * a6;
+            out[4] = b3 * a1 + b4 * a4 + b5 * a7;
+            out[5] = b3 * a2 + b4 * a5 + b5 * a8;
+            out[6] = b6 * a0 + b7 * a3 + b8 * a6;
+            out[7] = b6 * a1 + b7 * a4 + b8 * a7;
+            out[8] = b6 * a2 + b7 * a5 + b8 * a8;
+        }
+        m3.multiply = multiply;
+        function translation(x, y) {
+            return [
+                1, 0, 0,
+                0, 1, 0,
+                x, y, 1,
+            ];
+        }
+        m3.translation = translation;
+        function rotation(degrees) {
+            const radians = degrees * Math.PI / 180;
+            const cos = Math.cos(radians);
+            const sin = Math.sin(radians);
+            return [
+                cos, -sin, 0,
+                sin, cos, 0,
+                0, 0, 1,
+            ];
+        }
+        m3.rotation = rotation;
+        function scaling(x, y) {
+            return [
+                x, 0, 0,
+                0, y, 0,
+                0, 0, 1,
+            ];
+        }
+        m3.scaling = scaling;
+        function projection(width, height) {
+            return [
+                2 / width, 0, 0,
+                0, -2 / height, 0,
+                -1, 1, 1,
+            ];
+        }
+        m3.projection = projection;
+    })(m3 = P.m3 || (P.m3 = {}));
+})(P || (P = {}));
+var P;
+(function (P) {
+    var renderer;
+    (function (renderer) {
+        var webgl;
+        (function (webgl) {
+            function createCanvas() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 480;
+                canvas.height = 360;
+                return canvas;
+            }
+            const horizontalInvertMatrix = P.m3.scaling(-1, 1);
+            class Shader {
+                constructor(gl, program) {
+                    this.gl = gl;
+                    this.program = program;
+                    this.uniformLocations = {};
+                    this.attributeLocations = {};
+                    const activeUniforms = gl.getProgramParameter(program, this.gl.ACTIVE_UNIFORMS);
+                    for (let index = 0; index < activeUniforms; index++) {
+                        const info = gl.getActiveUniform(program, index);
+                        if (!info) {
+                            throw new Error('uniform at index ' + index + ' does not exist');
+                        }
+                        const name = info.name;
+                        const location = gl.getUniformLocation(program, name);
+                        if (!location) {
+                            throw new Error('uniform named ' + name + ' does not exist');
+                        }
+                        this.uniformLocations[name] = location;
+                    }
+                    const activeAttributes = gl.getProgramParameter(program, this.gl.ACTIVE_ATTRIBUTES);
+                    for (let index = 0; index < activeAttributes; index++) {
+                        const info = gl.getActiveAttrib(program, index);
+                        if (!info) {
+                            throw new Error('attribute at index ' + index + ' does not exist');
+                        }
+                        this.attributeLocations[info.name] = gl.getAttribLocation(program, info.name);
+                    }
+                }
+                uniform1f(name, value) {
+                    const location = this.getUniform(name);
+                    this.gl.uniform1f(location, value);
+                }
+                uniform2f(name, a, b) {
+                    const location = this.getUniform(name);
+                    this.gl.uniform2f(location, a, b);
+                }
+                uniform4f(name, a, b, c, d) {
+                    const location = this.getUniform(name);
+                    this.gl.uniform4f(location, a, b, c, d);
+                }
+                uniformMatrix3(name, value) {
+                    const location = this.getUniform(name);
+                    this.gl.uniformMatrix3fv(location, false, value);
+                }
+                hasUniform(name) {
+                    return this.uniformLocations.hasOwnProperty(name);
+                }
+                getUniform(name) {
+                    if (!this.hasUniform(name)) {
+                        throw new Error('uniform of name ' + name + ' does not exist');
+                    }
+                    return this.uniformLocations[name];
+                }
+                attributeBuffer(name, value) {
+                    if (!this.hasAttribute(name)) {
+                        throw new Error('attribute of name ' + name + ' does not exist');
+                    }
+                    const location = this.attributeLocations[name];
+                    this.gl.enableVertexAttribArray(location);
+                    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, value);
+                    this.gl.vertexAttribPointer(location, 2, this.gl.FLOAT, false, 0, 0);
+                }
+                hasAttribute(name) {
+                    return this.attributeLocations.hasOwnProperty(name);
+                }
+                getAttribute(name) {
+                    if (!this.hasAttribute(name)) {
+                        throw new Error('attribute of name ' + name + ' does not exist');
+                    }
+                    return this.attributeLocations[name];
+                }
+            }
+            class WebGLSpriteRenderer {
+                constructor() {
+                    this.globalScaleMatrix = P.m3.scaling(1, 1);
+                    this.costumeTextures = new Map();
+                    this.canvas = createCanvas();
+                    const gl = this.canvas.getContext('webgl', this.getContextOptions());
+                    if (!gl) {
+                        throw new Error('cannot get webgl rendering context');
+                    }
+                    this.gl = gl;
+                    this.noFiltersShader = this.createShader(WebGLSpriteRenderer.vertexShader, WebGLSpriteRenderer.fragmentShader, []);
+                    this.allFiltersShader = this.createShader(WebGLSpriteRenderer.vertexShader, WebGLSpriteRenderer.fragmentShader, [
+                        'ENABLE_BRIGHTNESS',
+                        'ENABLE_COLOR',
+                        'ENABLE_GHOST',
+                        'ENABLE_FISHEYE',
+                        'ENABLE_MOSAIC',
+                        'ENABLE_PIXELATE',
+                    ]);
+                    this.gl.enable(this.gl.BLEND);
+                    this.gl.blendFuncSeparate(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA, this.gl.ONE, this.gl.ONE_MINUS_SRC_ALPHA);
+                    this.quadBuffer = this.gl.createBuffer();
+                    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.quadBuffer);
+                    this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array([
+                        0, 0,
+                        0, 1,
+                        1, 0,
+                        1, 0,
+                        0, 1,
+                        1, 1,
+                    ]), this.gl.STATIC_DRAW);
+                    this.reset(1);
+                }
+                getContextOptions() {
+                    return {
+                        alpha: false,
+                    };
+                }
+                compileShader(type, source, definitions) {
+                    if (definitions) {
+                        for (const def of definitions) {
+                            source = '#define ' + def + '\n' + source;
+                        }
+                    }
+                    const shader = this.gl.createShader(type);
+                    if (!shader) {
+                        throw new Error('Cannot create shader');
+                    }
+                    this.gl.shaderSource(shader, source);
+                    this.gl.compileShader(shader);
+                    if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
+                        const error = this.gl.getShaderInfoLog(shader);
+                        this.gl.deleteShader(shader);
+                        throw new Error('Shader compilation error: ' + error);
+                    }
+                    return shader;
+                }
+                compileProgram(vs, fs, definitions) {
+                    const vertexShader = this.compileShader(this.gl.VERTEX_SHADER, vs, definitions);
+                    const fragmentShader = this.compileShader(this.gl.FRAGMENT_SHADER, fs, definitions);
+                    const program = this.gl.createProgram();
+                    if (!program) {
+                        throw new Error('Cannot create program');
+                    }
+                    this.gl.attachShader(program, vertexShader);
+                    this.gl.attachShader(program, fragmentShader);
+                    this.gl.linkProgram(program);
+                    if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
+                        const error = this.gl.getProgramInfoLog(program);
+                        this.gl.deleteProgram(program);
+                        throw new Error('Program compilation error: ' + error);
+                    }
+                    return program;
+                }
+                createShader(vs, fs, definitions) {
+                    const program = this.compileProgram(vs, fs, definitions);
+                    return new Shader(this.gl, program);
+                }
+                convertToTexture(canvas) {
+                    const texture = this.gl.createTexture();
+                    if (!texture) {
+                        throw new Error('Cannot create texture');
+                    }
+                    this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+                    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, canvas);
+                    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+                    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+                    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
+                    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
+                    return texture;
+                }
+                destroy() {
+                    const extension = this.gl.getExtension('WEBGL_lose_context');
+                    if (extension) {
+                        extension.loseContext();
+                    }
+                }
+                reset(scale) {
+                    this.canvas.width = scale * 480;
+                    this.canvas.height = scale * 360;
+                    this.gl.viewport(0, 0, scale * 480, scale * 360);
+                    if (this.globalScaleMatrix[0] !== scale) {
+                        this.globalScaleMatrix = P.m3.scaling(scale, scale);
+                    }
+                    this.gl.clearColor(1, 1, 1, 1);
+                    this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+                }
+                useShader(shader) {
+                    this.gl.useProgram(shader.program);
+                    this.shader = shader;
+                }
+                drawChild(child) {
+                    const costume = child.costumes[child.currentCostumeIndex];
+                    if (!this.costumeTextures.has(costume)) {
+                        const image = costume.getImage();
+                        const texture = this.convertToTexture(image);
+                        this.costumeTextures.set(costume, texture);
+                    }
+                    this.gl.bindTexture(this.gl.TEXTURE_2D, this.costumeTextures.get(costume));
+                    this.shader.attributeBuffer('a_position', this.quadBuffer);
+                    const matrix = P.m3.projection(this.canvas.width, this.canvas.height);
+                    P.m3.multiply(matrix, this.globalScaleMatrix);
+                    P.m3.multiply(matrix, P.m3.translation(240 + child.scratchX | 0, 180 - child.scratchY | 0));
+                    if (P.core.isSprite(child)) {
+                        if (child.rotationStyle === 0 && child.direction !== 90) {
+                            P.m3.multiply(matrix, P.m3.rotation(90 - child.direction));
+                        }
+                        else if (child.rotationStyle === 1 && child.direction < 0) {
+                            P.m3.multiply(matrix, horizontalInvertMatrix);
+                        }
+                        if (child.scale !== 1) {
+                            P.m3.multiply(matrix, P.m3.scaling(child.scale, child.scale));
+                        }
+                    }
+                    if (costume.scale !== 1) {
+                        P.m3.multiply(matrix, P.m3.scaling(costume.scale, costume.scale));
+                    }
+                    P.m3.multiply(matrix, P.m3.translation(-costume.rotationCenterX, -costume.rotationCenterY));
+                    P.m3.multiply(matrix, P.m3.scaling(costume.width, costume.height));
+                    this.shader.uniformMatrix3('u_matrix', matrix);
+                    if (this.shader.hasUniform('u_opacity')) {
+                        this.shader.uniform1f('u_opacity', 1 - child.filters.ghost / 100);
+                    }
+                    if (this.shader.hasUniform('u_brightness')) {
+                        this.shader.uniform1f('u_brightness', child.filters.brightness / 100);
+                    }
+                    if (this.shader.hasUniform('u_color')) {
+                        this.shader.uniform1f('u_color', child.filters.color / 200);
+                    }
+                    if (this.shader.hasUniform('u_mosaic')) {
+                        const mosaic = Math.round((Math.abs(child.filters.mosaic) + 10) / 10);
+                        this.shader.uniform1f('u_mosaic', P.utils.clamp(mosaic, 1, 512));
+                    }
+                    if (this.shader.hasUniform('u_whirl')) {
+                        this.shader.uniform1f('u_whirl', child.filters.whirl * Math.PI / -180);
+                    }
+                    if (this.shader.hasUniform('u_fisheye')) {
+                        this.shader.uniform1f('u_fisheye', Math.max(0, (child.filters.fisheye + 100) / 100));
+                    }
+                    if (this.shader.hasUniform('u_pixelate')) {
+                        this.shader.uniform1f('u_pixelate', Math.abs(child.filters.pixelate) / 10);
+                    }
+                    if (this.shader.hasUniform('u_size')) {
+                        this.shader.uniform2f('u_size', costume.width, costume.height);
+                    }
+                    this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
+                }
+                drawTextureOverlay(texture) {
+                    const shader = this.noFiltersShader;
+                    this.gl.useProgram(shader.program);
+                    this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+                    shader.attributeBuffer('a_position', this.quadBuffer);
+                    const matrix = P.m3.projection(this.canvas.width, this.canvas.height);
+                    P.m3.multiply(matrix, this.globalScaleMatrix);
+                    P.m3.multiply(matrix, P.m3.translation(240, 180));
+                    P.m3.multiply(matrix, P.m3.scaling(1, 1));
+                    P.m3.multiply(matrix, P.m3.translation(-240, -180));
+                    P.m3.multiply(matrix, P.m3.scaling(480, 360));
+                    shader.uniformMatrix3('u_matrix', matrix);
+                    this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
+                }
+            }
+            WebGLSpriteRenderer.vertexShader = `
+    attribute vec2 a_position;
+
+    uniform mat3 u_matrix;
+
+    varying vec2 v_texcoord;
+
+    void main() {
+      gl_Position = vec4((u_matrix * vec3(a_position, 1)).xy, 0, 1);
+      v_texcoord = a_position;
+    }
+    `;
+            WebGLSpriteRenderer.fragmentShader = `
+    precision mediump float;
+
+    varying vec2 v_texcoord;
+
+    uniform sampler2D u_texture;
+
+    #ifdef ENABLE_BRIGHTNESS
+      uniform float u_brightness;
+    #endif
+    #ifdef ENABLE_COLOR
+      uniform float u_color;
+    #endif
+    #ifdef ENABLE_GHOST
+      uniform float u_opacity;
+    #endif
+    #ifdef ENABLE_MOSAIC
+      uniform float u_mosaic;
+    #endif
+    #ifdef ENABLE_WHIRL
+      uniform float u_whirl;
+    #endif
+    #ifdef ENABLE_FISHEYE
+      uniform float u_fisheye;
+    #endif
+    #ifdef ENABLE_PIXELATE
+      uniform float u_pixelate;
+      uniform vec2 u_size;
+    #endif
+    #ifdef ENABLE_COLOR_TEST
+      uniform vec3 u_colorTest;
+    #endif
+
+    const float minimumAlpha = 1.0 / 250.0;
+    const vec2 vecCenter = vec2(0.5, 0.5);
+
+    // http://lolengine.net/blog/2013/07/27/rgb-to-hsv-in-glsl
+    vec3 rgb2hsv(vec3 c) {
+      vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+      vec4 p = c.g < c.b ? vec4(c.bg, K.wz) : vec4(c.gb, K.xy);
+      vec4 q = c.r < p.x ? vec4(p.xyw, c.r) : vec4(c.r, p.yzx);
+      float d = q.x - min(q.w, q.y);
+      float e = 1.0e-10;
+      return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
+    }
+    vec3 hsv2rgb(vec3 c) {
+      vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+      vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+      return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+    }
+
+    void main() {
+      // varyings cannot be modified
+      vec2 texcoord = v_texcoord;
+
+      #ifdef ENABLE_MOSAIC
+      if (u_mosaic != 1.0) {
+        texcoord = fract(u_mosaic * v_texcoord);
+      }
